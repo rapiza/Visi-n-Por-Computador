@@ -2,17 +2,19 @@ import cv2
 import numpy as np
 cap = cv2.VideoCapture(0)
 windows_positioned = False
-seeds = []               # <--- nueva lista de semillas (x,y)
+seeds = []               #Lista de semillas (x,y) se usa para dibujar círculos en la imagen y como puntos iniciales para el algoritmo de seeded_region_growing.
 region_labels = None
 
 def seeded_region_growing(gray, seeds, thresh=10):
-    h, w = gray.shape
-    labels = np.zeros((h, w), dtype=np.int32)
-    current_label = 1
+    h, w = gray.shape #dimensiones de la imagen devuelve una tupla (Alto o rows, Ancho o cols)
+    labels = np.zeros((h, w), dtype=np.int32) #matriz de etiquetas inicializada a cero
+    current_label = 1 #contador de etiquetas para cada región nueva
     for sx, sy in seeds:
         if sx < 0 or sy < 0 or sx >= w or sy >= h:
+            #Descartar semillas fuera de los límites de la imagen
             continue
         if labels[sy, sx] != 0:
+            #Si la semilla ya pertenece a una región, la ignora
             continue
         q = [(sy, sx)]
         labels[sy, sx] = current_label
@@ -54,6 +56,18 @@ def labels_to_color(labels):
     return out
 
 def on_mouse(event, x, y, flags, param):
+    #Manejador de eventos del ratón para seleccionar semillas
+    #Maneja los clics del ratón en la ventana registrada con cv2.setMouseCallback.
+    #Se declara global seeds para modificar la lista exterior
+    '''
+    Docstring for on_mouse
+    
+    :param event: tipo de evento (cv2.EVENT_*)
+    :param x: coordenadas del ratón (columna o eje x) posición a lo ancho de la imagen
+    :param y: coordenadas del ratón (fila o eje y) posición a lo alto de la imagen
+    :param flags: banderas adicionales
+    :param param: parámetros adicionales
+    '''
     global seeds
     if event == cv2.EVENT_LBUTTONDOWN:
         seeds.append((x, y))
